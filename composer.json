@@ -1,21 +1,16 @@
 {
-    "name": "brianmcdo/image-palette",
+    "name": "mauriblint/image-palette",
     "type": "library",
     "description": "Extracts colors from an image and generates a color palette against a whitelist of colors.",
     "keywords": ["image","color","palette","extractor","gd","laravel"],
-    "homepage": "https://github.com/BrianMcdo/ImagePalette",
+    "homepage": "https://github.com/mauriblint/ImagePalette",
     "license": "MIT",
     "minimum-stability": "stable",
     "authors": [
         {
-            "name": "Brian McDonald",
-            "email": "brian@brianmcdonald.io",
-            "homepage": "http://brianmcdonald.io",
-            "role": "Developer"
-        },
-        {
-            "name": "Gandalf the Grey",
-            "homepage": "https://github.com/gandalfx",
+            "name": "Mauricio Blint",
+            "email": "hi@mauricioblint.com",
+            "homepage": "http://mauricioblint.com",
             "role": "Developer"
         }
     ],

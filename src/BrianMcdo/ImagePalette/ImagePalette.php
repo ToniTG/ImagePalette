@@ -32,13 +32,13 @@ class ImagePalette implements IteratorAggregate
      * @var string
      */
     protected $file;
-    
+
     /**
      * Loaded Image
      * @var object
      */
     protected $loadedImage;
-    
+
     /**
      * Process every Nth pixel
      * @var int
@@ -75,15 +75,15 @@ class ImagePalette implements IteratorAggregate
         0x000000, 0x999999, 0xcccccc, 0xffffff, 0xE7D8B1, 0xFDADC7,
         0x424153, 0xABBCDA, 0xF5DD01
     );
-    
+
     /**
      * Colors that were found to be prominent
      * Array of Color objects
-     * 
+     *
      * @var array
      */
     protected $palette;
-    
+
     /**
      * Library used
      * Supported are GD and Imagick
@@ -103,10 +103,10 @@ class ImagePalette implements IteratorAggregate
         $this->file = $file;
         $this->precision = $precision;
         $this->paletteLength = $paletteLength;
-        
+
         // use provided libname or auto-detect
         $this->lib = $this->graphicsLibrary($library);
-        
+
         // create an array with color ints as keys
         $this->whiteList = array_fill_keys($this->whiteList, 0);
 
@@ -140,7 +140,7 @@ class ImagePalette implements IteratorAggregate
 
         return  $libraries[$lib];
     }
-    
+
     /**
      * Select a graphical library and start generating the Image Palette
      * @param string $lib
@@ -155,6 +155,9 @@ class ImagePalette implements IteratorAggregate
 
         // sort whiteList
         arsort($this->whiteList);
+
+        // remove empty colors (less than 5 matchs)
+        $this->whiteList = array_filter($this->whiteList, function ($v) { return ($v > 5); });
 
         // sort whiteList accordingly
         $this->palette = array_map(
@@ -224,7 +227,7 @@ class ImagePalette implements IteratorAggregate
     {
         throw new Exception("Gmagick not supported");
     }
-    
+
     /**
      * Get and set size of the image using GD.
      */
@@ -232,7 +235,7 @@ class ImagePalette implements IteratorAggregate
     {
         list($this->width, $this->height) = getimagesize($this->file);
     }
-    
+
     /**
      * Get and set size of image using ImageMagick.
      */
@@ -242,10 +245,10 @@ class ImagePalette implements IteratorAggregate
         $this->width  = $d['width'];
         $this->height = $d['height'];
     }
-    
+
     /**
      * For each interesting pixel, add its closest color to the loaded colors array
-     * 
+     *
      * @return mixed
      */
     protected function readPixels()
@@ -256,38 +259,38 @@ class ImagePalette implements IteratorAggregate
             // Column
             for ($y = 0; $y < $this->height; $y += $this->precision)
             {
-                
+
                 $color = $this->getPixelColor($x, $y);
-                
+
                 // transparent pixels don't really have a color
                 if ($color->isTransparent())
                     continue 1;
-                
+
                 // increment closes whiteList color (key)
                 $this->whiteList[ $this->getClosestColor($color) ]++;
             }
         }
     }
-    
+
     /**
      * Get closest matching color
-     * 
+     *
      * @param Color $color
      * @return int
      */
     protected function getClosestColor(Color $color)
     {
-        
+
         $bestDiff = PHP_INT_MAX;
-        
+
         // default to black so hhvm won't cry
         $bestColor = 0x000000;
-        
+
         foreach ($this->whiteList as $wlColor => $hits)
         {
             // calculate difference (don't sqrt)
             $diff = $color->getDiff($wlColor);
-            
+
             // see if we got a new best
             if ($diff < $bestDiff)
             {
@@ -295,17 +298,17 @@ class ImagePalette implements IteratorAggregate
                 $bestColor = $wlColor;
             }
         }
-        
+
         return $bestColor;
     }
-    
+
     /**
      * Returns an array describing the color at x,y
      * At index 0 is the color as a whole int (may include alpha)
      * At index 1 is the color's red value
      * At index 2 is the color's green value
      * At index 3 is the color's blue value
-     * 
+     *
      * @param  int $x
      * @param  int $y
      * @return Color
@@ -314,10 +317,10 @@ class ImagePalette implements IteratorAggregate
     {
         return $this->{'getPixelColor' . $this->lib} ($x, $y);
     }
-    
+
     /**
      * Using to retrieve color information about a specified pixel
-     * 
+     *
      * @see  getPixelColor()
      * @param  int $x
      * @param  int $y
@@ -326,7 +329,7 @@ class ImagePalette implements IteratorAggregate
     protected function getPixelColorGD($x, $y)
     {
         $color = imagecolorat($this->loadedImage, $x, $y);
-        
+
         return new Color (
             $color
             // $rgb['red'],
@@ -334,10 +337,10 @@ class ImagePalette implements IteratorAggregate
             // $rgb['blue']
         );
     }
-    
+
     /**
      * Using to retrieve color information about a specified pixel
-     * 
+     *
      * @see  getPixelColor()
      * @param  int $x
      * @param  int $y
@@ -346,7 +349,7 @@ class ImagePalette implements IteratorAggregate
     protected function getPixelColorImagick($x, $y)
     {
         $rgb = $this->loadedImage->getImagePixelColor($x, $y)->getColor();
-        
+
         return new Color([
             $rgb['r'],
             $rgb['g'],
@@ -358,10 +361,10 @@ class ImagePalette implements IteratorAggregate
     {
         throw new Exception("Gmagick not supported: ($x, $y)");
     }
-    
+
     /**
      * Returns an array of Color objects
-     * 
+     *
      * @param  int $paletteLength
      * @return array
      */
@@ -372,14 +375,14 @@ class ImagePalette implements IteratorAggregate
         {
             $paletteLength = $this->paletteLength;
         }
-        
+
         // take the best hits
         return array_slice($this->palette, 0, $paletteLength, true);
     }
-    
+
     /**
      * Returns a json encoded version of the palette
-     * 
+     *
      * @return string
      */
     public function __toString()
@@ -411,11 +414,11 @@ class ImagePalette implements IteratorAggregate
 
         throw new Exception("Method $method does not exist");
     }
-    
+
     /**
      * Returns the palette for implementation of the IteratorAggregate interface
      * Used in foreach loops
-     * 
+     *
      * @see  getColors()
      * @return \ArrayIterator
      */
