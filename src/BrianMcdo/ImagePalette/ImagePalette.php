@@ -193,6 +193,10 @@ class ImagePalette implements IteratorAggregate
             case "bmp":
                 $this->loadedImage = imagecreatefrombmp($this->file);
                 break;
+			
+	    case "webp":
+                $this->loadedImage = imagecreatefromwebp($this->file);
+                break;
 
             default:
                 throw new UnsupportedFileTypeException("The file type .$extension is not supported.");
